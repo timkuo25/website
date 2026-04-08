@@ -32,7 +32,7 @@ export default async function BlogPost({ params }: Props) {
   }
 
   return (
-    <div className="max-w-3xl mx-auto px-6 py-16">
+    <div className="max-w-3xl mx-auto px-4 sm:px-6 py-10 sm:py-16">
       <Link
         href="/blog"
         className="text-sm text-gray-400 hover:text-gray-700 transition-colors mb-10 inline-block"
@@ -49,7 +49,7 @@ export default async function BlogPost({ params }: Props) {
               day: "numeric",
             })}
           </time>
-          <h1 className="mt-2 text-3xl font-bold tracking-tight text-gray-900">
+          <h1 className="mt-2 text-2xl sm:text-3xl font-bold tracking-tight text-gray-900">
             {post.title}
           </h1>
         </header>

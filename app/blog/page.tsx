@@ -10,7 +10,7 @@ export default function BlogIndex() {
   const posts = getSortedPostsData();
 
   return (
-    <div className="max-w-3xl mx-auto px-6 py-16">
+    <div className="max-w-3xl mx-auto px-4 sm:px-6 py-10 sm:py-16">
       <h1 className="text-2xl font-bold tracking-tight text-gray-900 mb-2">
         Blog
       </h1>
