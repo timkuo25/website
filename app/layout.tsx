@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Chung-Chia Kuo",
-  description: "Personal website of Chung-Chia (Tim) Kuo — Software Engineer",
+  description: "Personal website of Chung-Chia (Tim) Kuo",
 };
 
 export default function RootLayout({
