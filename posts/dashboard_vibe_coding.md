@@ -131,6 +131,7 @@ Production 版就是去弄雲端資料庫一些奇怪的設定，這裡就不贅
 弄完大概會長這樣
 ![初版成品](https://res.cloudinary.com/dazoegq66/image/upload/v1779243102/dashboard_1_ax1ibu.png)
 
+---
 
 ## 功能擴充
 
@@ -177,12 +178,17 @@ search api
 ### Authentication
 
 我後來發現根本誰都可以來點這個網頁的按鈕來加 / 刪資料啊哈哈哈哈
+
 因為這個工具只有我要用，可以自訂一個密碼弄成 Bearer token，讓 API 帶或登入頁，登入成功後設一個 http-only 的 cookie，之後用相同裝置就會保持登入了
 
 這樣就完成了要登入之後才看的到變動 entry 的按鈕和特定資訊啦
 
+
 ![最終頁面](https://res.cloudinary.com/dazoegq66/image/upload/v1779274169/dashboard_3_bdtrkk.png)
 
+我感覺下一次更新應該要每輸錯一次密碼就讓網站變得更詭異陰沉，然後 jump scare 之類的，直接從 dashboard 變恐怖遊戲
+
+不過這些就以後再說吧
 
 
 [連結](https://dashboard-ten-lemon-31.vercel.app/)

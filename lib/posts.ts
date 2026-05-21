@@ -42,8 +42,16 @@ export async function getPostData(slug: string): Promise<Post> {
   const { data, content } = matter(fileContents);
 
   const { remark } = await import('remark');
-  const remarkHtml = (await import('remark-html')).default;
-  const processedContent = await remark().use(remarkHtml).process(content);
+  const remarkGfm = (await import('remark-gfm')).default;
+  const remarkRehype = (await import('remark-rehype')).default;
+  const rehypeHighlight = (await import('rehype-highlight')).default;
+  const rehypeStringify = (await import('rehype-stringify')).default;
+  const processedContent = await remark()
+    .use(remarkGfm)
+    .use(remarkRehype)
+    .use(rehypeHighlight)
+    .use(rehypeStringify)
+    .process(content);
   const contentHtml = processedContent.toString();
 
   return {

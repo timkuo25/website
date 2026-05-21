@@ -75,16 +75,43 @@ body {
 }
 
 .prose pre {
-  background: #1f2937;
-  color: #f9fafb;
-  padding: 1.25rem;
   border-radius: 8px;
   overflow-x: auto;
   margin-bottom: 1.5rem;
+  font-size: 0.875rem;
 }
 
 .prose pre code {
   background: transparent;
   padding: 0;
-  font-size: 0.875rem;
+  font-family: var(--font-geist-mono), monospace;
+}
+
+.prose table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 1.5rem;
+  font-size: 0.9rem;
+}
+
+.prose thead {
+  background: #f3f4f6;
+}
+
+.prose th {
+  padding: 0.6rem 1rem;
+  text-align: left;
+  font-weight: 600;
+  color: #111827;
+  border: 1px solid #e5e7eb;
+}
+
+.prose td {
+  padding: 0.6rem 1rem;
+  color: #374151;
+  border: 1px solid #e5e7eb;
+}
+
+.prose tr:nth-child(even) td {
+  background: #f9fafb;
 }
