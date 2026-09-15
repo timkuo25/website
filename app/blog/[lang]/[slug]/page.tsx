@@ -1,20 +1,21 @@
 import Link from "next/link";
 import { getPostData, getAllPostSlugs } from "@/lib/posts";
+import { isLocale, untranslatedNotice } from "@/lib/i18n";
 import { notFound } from "next/navigation";
 
 interface Props {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ lang: string; slug: string }>;
 }
 
-export async function generateStaticParams() {
-  const slugs = getAllPostSlugs();
-  return slugs.map((slug) => ({ slug }));
+export function generateStaticParams() {
+  return getAllPostSlugs().map((slug) => ({ slug }));
 }
 
 export async function generateMetadata({ params }: Props) {
-  const { slug } = await params;
+  const { lang, slug } = await params;
+  if (!isLocale(lang)) return { title: "Post Not Found" };
   try {
-    const post = await getPostData(slug);
+    const post = await getPostData(slug, lang);
     return { title: `${post.title} — Tim Kuo` };
   } catch {
     return { title: "Post Not Found" };
@@ -22,11 +23,12 @@ export async function generateMetadata({ params }: Props) {
 }
 
 export default async function BlogPost({ params }: Props) {
-  const { slug } = await params;
+  const { lang, slug } = await params;
+  if (!isLocale(lang)) notFound();
 
   let post;
   try {
-    post = await getPostData(slug);
+    post = await getPostData(slug, lang);
   } catch {
     notFound();
   }
@@ -34,7 +36,7 @@ export default async function BlogPost({ params }: Props) {
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 py-10 sm:py-16">
       <Link
-        href="/blog"
+        href={`/blog/${lang}`}
         className="text-sm text-gray-400 hover:text-gray-700 transition-colors mb-10 inline-block"
       >
         ← Back to Blog
@@ -53,6 +55,12 @@ export default async function BlogPost({ params }: Props) {
             {post.title}
           </h1>
         </header>
+
+        {!post.translated && (
+          <p className="mb-8 text-sm text-gray-500 bg-gray-100 rounded-md px-4 py-3">
+            {untranslatedNotice}
+          </p>
+        )}
 
         <div
           className="prose"
