@@ -15,6 +15,52 @@ export interface Post extends PostMeta {
   contentHtml: string;
 }
 
+interface HastNode {
+  type: string;
+  tagName?: string;
+  properties?: Record<string, unknown>;
+  children?: HastNode[];
+  value?: string;
+}
+
+function rehypeImageFigure() {
+  return (tree: HastNode) => {
+    const walk = (node: HastNode) => {
+      if (!node.children) return;
+      node.children = node.children.map((child) => {
+        if (
+          child.type === 'element' &&
+          child.tagName === 'p' &&
+          child.children?.length === 1 &&
+          child.children[0].type === 'element' &&
+          child.children[0].tagName === 'img'
+        ) {
+          const img = child.children[0];
+          const alt = img.properties?.alt as string | undefined;
+          const figureChildren: HastNode[] = [img];
+          if (alt) {
+            figureChildren.push({
+              type: 'element',
+              tagName: 'figcaption',
+              properties: {},
+              children: [{ type: 'text', value: alt }],
+            });
+          }
+          return {
+            type: 'element',
+            tagName: 'figure',
+            properties: {},
+            children: figureChildren,
+          };
+        }
+        walk(child);
+        return child;
+      });
+    };
+    walk(tree);
+  };
+}
+
 export function getSortedPostsData(): PostMeta[] {
   if (!fs.existsSync(postsDirectory)) return [];
 
@@ -49,6 +95,7 @@ export async function getPostData(slug: string): Promise<Post> {
   const processedContent = await remark()
     .use(remarkGfm)
     .use(remarkRehype)
+    .use(rehypeImageFigure)
     .use(rehypeHighlight)
     .use(rehypeStringify)
     .process(content);
