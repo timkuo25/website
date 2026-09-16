@@ -8,7 +8,7 @@ interface Props {
 }
 
 export const metadata = {
-  title: "Blog — Tim Kuo",
+  title: "TCK",
   description: "Articles and thoughts by Chung-Chia (Tim) Kuo",
 };
 
@@ -16,7 +16,7 @@ export default async function BlogIndex({ params }: Props) {
   const { lang } = await params;
   if (!isLocale(lang)) notFound();
 
-  const posts = getSortedPostsData(lang);
+  const posts = getSortedPostsData("general", lang);
 
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 py-10 sm:py-16">
@@ -24,7 +24,7 @@ export default async function BlogIndex({ params }: Props) {
         Blog
       </h1>
       <p className="text-gray-500 mb-12">
-        Thoughts on technology, life, and everything in between.
+        Thoughts on life, language, and everything in between.
       </p>
 
       {posts.length === 0 ? (

@@ -8,15 +8,15 @@ interface Props {
 }
 
 export function generateStaticParams() {
-  return getAllPostSlugs().map((slug) => ({ slug }));
+  return getAllPostSlugs("general").map((slug) => ({ slug }));
 }
 
 export async function generateMetadata({ params }: Props) {
   const { lang, slug } = await params;
   if (!isLocale(lang)) return { title: "Post Not Found" };
   try {
-    const post = await getPostData(slug, lang);
-    return { title: `${post.title} — Tim Kuo` };
+    const post = await getPostData("general", slug, lang);
+    return { title: `${post.title} — TCK` };
   } catch {
     return { title: "Post Not Found" };
   }
@@ -28,7 +28,7 @@ export default async function BlogPost({ params }: Props) {
 
   let post;
   try {
-    post = await getPostData(slug, lang);
+    post = await getPostData("general", slug, lang);
   } catch {
     notFound();
   }

@@ -2,6 +2,7 @@
 title: "Case Study：把「結果」用「事件或動作」描述的表達方法"
 date: "2026-09-15"
 excerpt: "田山美如畫"
+sections: ["general"]
 ---
 
 Pop Quiz：請問這句話是什麼意思？

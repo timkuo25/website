@@ -3,11 +3,17 @@ import path from 'path';
 import matter from 'gray-matter';
 import { defaultLocale, type Locale } from './i18n';
 
+export const sections = ['general', 'tech'] as const;
+export type Section = (typeof sections)[number];
+
 const postsDirectory = path.join(process.cwd(), 'posts');
 
 // Posts live under posts/<locale>/<slug>.md. The defaultLocale folder is
 // canonical (every post has an entry there); other locales only need a file
 // when a translation exists — otherwise callers fall back to defaultLocale.
+// Which section(s) a post belongs to is declared in its own frontmatter
+// (`sections: [...]`), read from the canonical file, rather than encoded in
+// the folder layout — that way a post can belong to more than one section.
 function localeDir(locale: Locale): string {
   return path.join(postsDirectory, locale);
 }
@@ -16,13 +22,41 @@ function slugFilePath(slug: string, locale: Locale): string {
   return path.join(localeDir(locale), `${slug}.md`);
 }
 
-function canonicalSlugs(): string[] {
+interface CanonicalEntry {
+  slug: string;
+  sections: Section[];
+}
+
+// Reading every post's frontmatter is cheap, but there's no reason to redo it
+// on every call within the same process — the canonical index is computed
+// once and reused.
+let canonicalIndexCache: CanonicalEntry[] | null = null;
+
+function canonicalIndex(): CanonicalEntry[] {
+  if (canonicalIndexCache) return canonicalIndexCache;
+
   const dir = localeDir(defaultLocale);
-  if (!fs.existsSync(dir)) return [];
-  return fs
+  if (!fs.existsSync(dir)) {
+    canonicalIndexCache = [];
+    return canonicalIndexCache;
+  }
+
+  canonicalIndexCache = fs
     .readdirSync(dir)
     .filter((f) => f.endsWith('.md'))
-    .map((f) => f.replace(/\.md$/, ''));
+    .map((f) => {
+      const slug = f.replace(/\.md$/, '');
+      const { data } = matter(fs.readFileSync(path.join(dir, f), 'utf8'));
+      return { slug, sections: (data.sections as Section[] | undefined) ?? [] };
+    });
+
+  return canonicalIndexCache;
+}
+
+function slugsForSection(section: Section): string[] {
+  return canonicalIndex()
+    .filter((entry) => entry.sections.includes(section))
+    .map((entry) => entry.slug);
 }
 
 // Resolves which file to actually read for a (slug, locale) pair, falling
@@ -93,8 +127,8 @@ function rehypeImageFigure() {
   };
 }
 
-export function getSortedPostsData(locale: Locale = defaultLocale): PostMeta[] {
-  return canonicalSlugs()
+export function getSortedPostsData(section: Section, locale: Locale = defaultLocale): PostMeta[] {
+  return slugsForSection(section)
     .map((slug) => {
       const { filePath, translated } = resolveFile(slug, locale);
       const fileContents = fs.readFileSync(filePath, 'utf8');
@@ -110,7 +144,16 @@ export function getSortedPostsData(locale: Locale = defaultLocale): PostMeta[] {
     .sort((a, b) => (a.date < b.date ? 1 : -1));
 }
 
-export async function getPostData(slug: string, locale: Locale = defaultLocale): Promise<Post> {
+export async function getPostData(
+  section: Section,
+  slug: string,
+  locale: Locale = defaultLocale
+): Promise<Post> {
+  const entry = canonicalIndex().find((e) => e.slug === slug);
+  if (!entry || !entry.sections.includes(section)) {
+    throw new Error(`Post "${slug}" is not in section "${section}"`);
+  }
+
   const { filePath, translated } = resolveFile(slug, locale);
   const fileContents = fs.readFileSync(filePath, 'utf8');
   const { data, content } = matter(fileContents);
@@ -141,6 +184,6 @@ export async function getPostData(slug: string, locale: Locale = defaultLocale):
 
 // Every canonical slug resolves for every locale (falling back to
 // defaultLocale when untranslated), so the slug set doesn't vary by locale.
-export function getAllPostSlugs(): string[] {
-  return canonicalSlugs();
+export function getAllPostSlugs(section: Section): string[] {
+  return slugsForSection(section);
 }

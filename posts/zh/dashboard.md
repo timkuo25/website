@@ -2,6 +2,7 @@
 title: "工作紀錄 dashboard"
 date: "2026-05-19"
 excerpt: "還敢 vibe coding"
+sections: ["tech"]
 ---
 
 紀錄一下搞一個工作 dashboard 的過程
