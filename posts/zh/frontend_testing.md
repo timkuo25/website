@@ -110,7 +110,7 @@ describe('LoginForm 登入表單整合測試', () => {
 
 ### e2e test
 
-e2e 可以想成開啟瀏覽器，實際走過使用者會使用的流程，通常是用 PlayWright 或 Cypress 這種工具來做。由於成本最高耗時最久，這步更要挑重要的流程來做。
+e2e 可以想成開啟瀏覽器，實際走過使用者會使用的流程，通常是用 [PlayWright](https://playwright.dev/) 或 [Cypress](https://www.cypress.io/#create) 這種工具來做。由於成本最高耗時最久，這步更要挑重要的流程來做。
 
 值得注意的是在這步會碰到很多外部的東西
 
@@ -172,13 +172,37 @@ test('登入成功後，Token 應該要正確存入 localStorage', async ({ page
   - 「當使用者身在日本東京時，系統時間或幣別有沒有正確轉換」
   -  瀏覽器的「是否允許使用相機/麥克風」、「是否允許推播通知（Push Notification）」
 
-## 如何讓 AI 寫出好的測試
+## Lint
+
+Lint 是能自動化的改 Coding Style 的工具，常用的例如 ESLint、Prettier。主要功能有
+
+- 抓出 [Code Smell](https://gelis-dotnet.blogspot.com/2023/02/code-smell-or-bad-smell.html)
+- 統一團隊的 Coding Style (Naming convention、Indent 等)
+
+ESLint 跟 Prettier 可以透過 npm 安裝，VS Code 也有在寫 code 時以顏色標註的 Extension 能用
+
+## 將測試放入開發流程並自動化
+
+### 在 commit 時做 lint
+
+[Husky](https://typicode.github.io/husky/) 是一個能幫專案操作 [Git Hook](https://hackmd.io/@s716134/githook01) 的工具。透過他可以實現 **在 commit 時自動跑 eslint, prettier** 的功能，確保每次 commit 都讓程式碼不至於長得太醜
+
+### 用 GitHub Action 跑測試
+
+發生在開啟一個 PR 準備把 code merge 進別的 branch 時。
 
 
-- 明確指定測試層級與邊界
-- 測行為而不測實作
+
+
+
+## 讓 AI 寫出好的測試
+
+當然有了 AI 幫忙，測試可以寫得更快與完整。為了避免 AI 寫出多餘，或會干擾開發、成為技術債的測試，應該要給 AI 一些能明確遵守的規範，例如：
+
+- 明確指定測試層級、工具與邊界
 - 給予專案既有的測試範例
-- 新增測試前徵詢同意
+- 給予 AI 測試成本的標準
+- 請 AI 在新增測試前徵詢同意
 
 規範範例
 ```
@@ -192,7 +216,13 @@ changes require desktop and mobile review and screenshots in the pull request. I
 once with `pnpm exec playwright install chromium`.
 ```
 
+## 總結
+
+好的測試可以讓程式變得可靠、維護變得容易。
+在考量到測試成本與程式可靠性的取捨時，有賴於對產品重點流程的理解，及團隊共同制訂與溝通出的測試方法與範圍。
+有了 AI 協作寫測試後，更應清楚定義測試的 spec，及規範 AI 的行為準則。
+
 ## Reference
 
 [Web API](https://developer.mozilla.org/en-US/docs/Web/API)
-
+[Husky 教學](https://emtech.cc/p/husky/)
