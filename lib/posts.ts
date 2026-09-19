@@ -160,12 +160,16 @@ export async function getPostData(
 
   const { remark } = await import('remark');
   const remarkGfm = (await import('remark-gfm')).default;
+  const remarkMath = (await import('remark-math')).default;
   const remarkRehype = (await import('remark-rehype')).default;
+  const rehypeKatex = (await import('rehype-katex')).default;
   const rehypeHighlight = (await import('rehype-highlight')).default;
   const rehypeStringify = (await import('rehype-stringify')).default;
   const processedContent = await remark()
     .use(remarkGfm)
+    .use(remarkMath)
     .use(remarkRehype)
+    .use(rehypeKatex)
     .use(rehypeImageFigure)
     .use(rehypeHighlight)
     .use(rehypeStringify)
@@ -186,4 +190,20 @@ export async function getPostData(
 // defaultLocale when untranslated), so the slug set doesn't vary by locale.
 export function getAllPostSlugs(section: Section): string[] {
   return slugsForSection(section);
+}
+
+// Adjacent posts follow the same order as the blog index (newest first), so
+// "prev" is the newer post shown above it in the list and "next" is older.
+export function getAdjacentPosts(
+  section: Section,
+  slug: string,
+  locale: Locale = defaultLocale
+): { prev: PostMeta | null; next: PostMeta | null } {
+  const posts = getSortedPostsData(section, locale);
+  const index = posts.findIndex((post) => post.slug === slug);
+  if (index === -1) return { prev: null, next: null };
+  return {
+    prev: index > 0 ? posts[index - 1] : null,
+    next: index < posts.length - 1 ? posts[index + 1] : null,
+  };
 }

@@ -20,15 +20,15 @@ export default async function TechBlogIndex({ params }: Props) {
 
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 py-10 sm:py-16">
-      <h1 className="text-2xl font-bold tracking-tight text-gray-900 mb-2">
+      <h1 className="text-2xl font-bold tracking-tight text-gray-900 mb-2 dark:text-gray-100">
         Blog
       </h1>
-      <p className="text-gray-500 mb-12">
+      <p className="text-gray-500 mb-12 dark:text-gray-400">
         Notes on code, tools, and things I&apos;m building.
       </p>
 
       {posts.length === 0 ? (
-        <p className="text-gray-400">No posts yet. Check back soon.</p>
+        <p className="text-gray-400 dark:text-gray-500">No posts yet. Check back soon.</p>
       ) : (
         <ul className="space-y-10">
           {posts.map((post) => (
@@ -37,25 +37,25 @@ export default async function TechBlogIndex({ params }: Props) {
                 href={`/tech/blog/${lang}/${post.slug}`}
                 className="group block"
               >
-                <time className="text-xs text-gray-400 tracking-wide">
+                <time className="text-xs text-gray-400 tracking-wide dark:text-gray-500">
                   {new Date(post.date).toLocaleDateString("en-US", {
                     year: "numeric",
                     month: "long",
                     day: "numeric",
                   })}
                 </time>
-                <h2 className="mt-1.5 text-lg font-semibold text-gray-900 group-hover:text-gray-600 transition-colors">
+                <h2 className="mt-1.5 text-lg font-semibold text-gray-900 group-hover:text-gray-600 transition-colors dark:text-gray-100 dark:group-hover:text-gray-400">
                   {post.title}
                 </h2>
                 {!post.translated && (
-                  <p className="mt-1 text-xs text-gray-400">{untranslatedNotice}</p>
+                  <p className="mt-1 text-xs text-gray-400 dark:text-gray-500">{untranslatedNotice}</p>
                 )}
                 {post.excerpt && (
-                  <p className="mt-2 text-sm text-gray-500 leading-relaxed">
+                  <p className="mt-2 text-sm text-gray-500 leading-relaxed dark:text-gray-400">
                     {post.excerpt}
                   </p>
                 )}
-                <span className="mt-3 inline-block text-xs text-gray-400 group-hover:text-gray-700 transition-colors">
+                <span className="mt-3 inline-block text-xs text-gray-400 group-hover:text-gray-700 transition-colors dark:text-gray-500 dark:group-hover:text-gray-300">
                   Read more →
                 </span>
               </Link>

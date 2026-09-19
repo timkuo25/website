@@ -30,7 +30,7 @@ export default function LanguageSwitcher({
       value={current}
       onChange={handleChange}
       aria-label="Language"
-      className="text-sm text-gray-600 bg-white border border-gray-200 rounded-md pl-2 pr-6 py-1 hover:border-gray-300 focus:outline-none focus:ring-1 focus:ring-gray-300 cursor-pointer"
+      className="text-sm text-gray-600 bg-white border border-gray-200 rounded-md pl-2 pr-6 py-1 hover:border-gray-300 focus:outline-none focus:ring-1 focus:ring-gray-300 cursor-pointer dark:text-gray-300 dark:bg-gray-900 dark:border-gray-700 dark:hover:border-gray-600 dark:focus:ring-gray-600"
     >
       {locales.map((locale) => (
         <option key={locale} value={locale}>

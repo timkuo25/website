@@ -1,8 +1,15 @@
 @import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
 
 :root {
   --background: #ffffff;
   --foreground: #111827;
+  color-scheme: light dark;
+}
+
+:root.dark {
+  --background: #0a0a0a;
+  --foreground: #e5e7eb;
 }
 
 @theme inline {
@@ -47,6 +54,12 @@ body {
   margin-bottom: 1.25rem;
 }
 
+.prose ol {
+  list-style-type: decimal;
+  padding-left: 1.5rem;
+  margin-bottom: 1.25rem;
+}
+
 .prose li {
   margin-bottom: 0.4rem;
   line-height: 1.7;
@@ -80,7 +93,10 @@ body {
 }
 
 .prose pre {
+  background: #f6f8fa;
+  border: 1px solid #e5e7eb;
   border-radius: 8px;
+  padding: 1rem;
   overflow-x: auto;
   margin-bottom: 1.5rem;
   font-size: 0.875rem;
@@ -140,4 +156,244 @@ body {
   margin-top: 0.5rem;
   font-size: 0.875rem;
   color: #6b7280;
+}
+
+.prose .katex-display {
+  margin: 2rem 0;
+  padding: 0.5rem 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.dark .prose h2,
+.dark .prose h3 {
+  color: #f3f4f6;
+}
+
+.dark .prose p,
+.dark .prose li,
+.dark .prose td {
+  color: #d1d5db;
+}
+
+.dark .prose a {
+  color: #60a5fa;
+}
+
+.dark .prose a:hover {
+  color: #93c5fd;
+}
+
+.dark .prose blockquote {
+  border-left-color: #374151;
+  color: #9ca3af;
+}
+
+.dark .prose code {
+  background: #1f2937;
+}
+
+.dark .prose pre {
+  background: #161b22;
+  border-color: #30363d;
+}
+
+.dark .prose pre code {
+  background: transparent;
+}
+
+.dark .prose thead {
+  background: #1f2937;
+}
+
+.dark .prose th {
+  color: #f3f4f6;
+  border-color: #374151;
+}
+
+.dark .prose td {
+  border-color: #374151;
+}
+
+.dark .prose tr:nth-child(even) td {
+  background: #171f2b;
+}
+
+.dark .prose figcaption {
+  color: #9ca3af;
+}
+
+/* Syntax highlighting (rehype-highlight), based on GitHub's light/dark themes.
+   Written by hand instead of importing highlight.js/styles/*.css so the
+   dark variant can be scoped under .dark instead of prefers-color-scheme. */
+.hljs {
+  color: #24292e;
+  background: transparent;
+}
+
+.hljs-doctag,
+.hljs-keyword,
+.hljs-meta .hljs-keyword,
+.hljs-template-tag,
+.hljs-template-variable,
+.hljs-type,
+.hljs-variable.language_ {
+  color: #d73a49;
+}
+
+.hljs-title,
+.hljs-title.class_,
+.hljs-title.class_.inherited__,
+.hljs-title.function_ {
+  color: #6f42c1;
+}
+
+.hljs-attr,
+.hljs-attribute,
+.hljs-literal,
+.hljs-meta,
+.hljs-number,
+.hljs-operator,
+.hljs-variable,
+.hljs-selector-attr,
+.hljs-selector-class,
+.hljs-selector-id {
+  color: #005cc5;
+}
+
+.hljs-regexp,
+.hljs-string,
+.hljs-meta .hljs-string {
+  color: #032f62;
+}
+
+.hljs-built_in,
+.hljs-symbol {
+  color: #e36209;
+}
+
+.hljs-comment,
+.hljs-code,
+.hljs-formula {
+  color: #6a737d;
+}
+
+.hljs-name,
+.hljs-quote,
+.hljs-selector-tag,
+.hljs-selector-pseudo {
+  color: #22863a;
+}
+
+.hljs-section {
+  color: #005cc5;
+  font-weight: bold;
+}
+
+.hljs-bullet {
+  color: #735c0f;
+}
+
+.hljs-emphasis {
+  color: #24292e;
+  font-style: italic;
+}
+
+.hljs-strong {
+  color: #24292e;
+  font-weight: bold;
+}
+
+.hljs-addition {
+  color: #22863a;
+  background-color: #f0fff4;
+}
+
+.hljs-deletion {
+  color: #b31d28;
+  background-color: #ffeef0;
+}
+
+.dark .hljs {
+  color: #c9d1d9;
+}
+
+.dark .hljs-doctag,
+.dark .hljs-keyword,
+.dark .hljs-meta .hljs-keyword,
+.dark .hljs-template-tag,
+.dark .hljs-template-variable,
+.dark .hljs-type,
+.dark .hljs-variable.language_ {
+  color: #ff7b72;
+}
+
+.dark .hljs-title,
+.dark .hljs-title.class_,
+.dark .hljs-title.class_.inherited__,
+.dark .hljs-title.function_ {
+  color: #d2a8ff;
+}
+
+.dark .hljs-attr,
+.dark .hljs-attribute,
+.dark .hljs-literal,
+.dark .hljs-meta,
+.dark .hljs-number,
+.dark .hljs-operator,
+.dark .hljs-variable,
+.dark .hljs-selector-attr,
+.dark .hljs-selector-class,
+.dark .hljs-selector-id {
+  color: #79c0ff;
+}
+
+.dark .hljs-regexp,
+.dark .hljs-string,
+.dark .hljs-meta .hljs-string {
+  color: #a5d6ff;
+}
+
+.dark .hljs-built_in,
+.dark .hljs-symbol {
+  color: #ffa657;
+}
+
+.dark .hljs-comment,
+.dark .hljs-code,
+.dark .hljs-formula {
+  color: #8b949e;
+}
+
+.dark .hljs-name,
+.dark .hljs-quote,
+.dark .hljs-selector-tag,
+.dark .hljs-selector-pseudo {
+  color: #7ee787;
+}
+
+.dark .hljs-section {
+  color: #1f6feb;
+}
+
+.dark .hljs-bullet {
+  color: #f2cc60;
+}
+
+.dark .hljs-emphasis {
+  color: #c9d1d9;
+}
+
+.dark .hljs-strong {
+  color: #c9d1d9;
+}
+
+.dark .hljs-addition {
+  color: #aff5b4;
+  background-color: #033a16;
+}
+
+.dark .hljs-deletion {
+  color: #ffdcd7;
+  background-color: #67060c;
 }

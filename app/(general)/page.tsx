@@ -7,14 +7,14 @@ export default function Home() {
 
       {/* Hero */}
       <section>
-        <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-black">
+        <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-black dark:text-white">
           哈囉 慢慢看
         </h1>
-        <p className="mt-2 text-sm text-gray-400">📍 Taipei, Taiwan</p>
+        <p className="mt-2 text-sm text-gray-400 dark:text-gray-500">📍 Taipei, Taiwan</p>
         <div className="mt-6 flex items-center gap-4">
           <a
             href="mailto:timkuo860930@gmail.com"
-            className="text-black hover:text-blue-500 transition-colors"
+            className="text-black hover:text-blue-500 transition-colors dark:text-white dark:hover:text-blue-400"
             aria-label="Email"
           >
             <Mail size={20} />
