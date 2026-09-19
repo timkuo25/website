@@ -2,6 +2,9 @@ import fs from 'fs';
 import path from 'path';
 import matter from 'gray-matter';
 import { defaultLocale, type Locale } from './i18n';
+import type { Category } from './categories';
+
+export { categories, categoryLabels, isCategory, type Category } from './categories';
 
 export const sections = ['general', 'tech'] as const;
 export type Section = (typeof sections)[number];
@@ -25,6 +28,7 @@ function slugFilePath(slug: string, locale: Locale): string {
 interface CanonicalEntry {
   slug: string;
   sections: Section[];
+  category?: Category;
 }
 
 // Reading every post's frontmatter is cheap, but there's no reason to redo it
@@ -47,16 +51,18 @@ function canonicalIndex(): CanonicalEntry[] {
     .map((f) => {
       const slug = f.replace(/\.md$/, '');
       const { data } = matter(fs.readFileSync(path.join(dir, f), 'utf8'));
-      return { slug, sections: (data.sections as Section[] | undefined) ?? [] };
+      return {
+        slug,
+        sections: (data.sections as Section[] | undefined) ?? [],
+        category: data.category as Category | undefined,
+      };
     });
 
   return canonicalIndexCache;
 }
 
-function slugsForSection(section: Section): string[] {
-  return canonicalIndex()
-    .filter((entry) => entry.sections.includes(section))
-    .map((entry) => entry.slug);
+function entriesForSection(section: Section): CanonicalEntry[] {
+  return canonicalIndex().filter((entry) => entry.sections.includes(section));
 }
 
 // Resolves which file to actually read for a (slug, locale) pair, falling
@@ -74,11 +80,21 @@ export interface PostMeta {
   title: string;
   date: string;
   excerpt?: string;
+  category?: Category;
+  tags: string[];
   translated: boolean;
+}
+
+export interface TocEntry {
+  id: string;
+  text: string;
+  depth: 2 | 3;
 }
 
 export interface Post extends PostMeta {
   contentHtml: string;
+  readingMinutes: number;
+  toc: TocEntry[];
 }
 
 interface HastNode {
@@ -87,6 +103,53 @@ interface HastNode {
   properties?: Record<string, unknown>;
   children?: HastNode[];
   value?: string;
+}
+
+interface VFileLike {
+  data: Record<string, unknown>;
+}
+
+// Gives each h2/h3 a stable id (so the on-page table of contents can jump to
+// it) and records {id, text, depth} for those headings on file.data.toc.
+// IDs are just an incrementing counter rather than slugified heading text —
+// headings are often in Chinese/Japanese, where slugifying is more trouble
+// than it's worth for an anchor nobody needs to read.
+function rehypeToc() {
+  return (tree: HastNode, file: VFileLike) => {
+    const toc: TocEntry[] = [];
+    let counter = 0;
+
+    const textOf = (node: HastNode): string => {
+      if (node.type === 'text') return node.value ?? '';
+      return (node.children ?? []).map(textOf).join('');
+    };
+
+    const walk = (node: HastNode) => {
+      if (!node.children) return;
+      for (const child of node.children) {
+        if (child.type === 'element' && (child.tagName === 'h2' || child.tagName === 'h3')) {
+          const id = `heading-${counter++}`;
+          child.properties = { ...(child.properties ?? {}), id };
+          toc.push({ id, text: textOf(child), depth: child.tagName === 'h2' ? 2 : 3 });
+        }
+        walk(child);
+      }
+    };
+    walk(tree);
+
+    file.data.toc = toc;
+  };
+}
+
+// A rough, language-mixed reading-time estimate: CJK text is counted by
+// character (no spaces to split words on) and everything else by word,
+// each at a typical reading speed, then summed.
+function estimateReadingMinutes(markdown: string): number {
+  const withoutCodeBlocks = markdown.replace(/```[\s\S]*?```/g, ' ');
+  const cjkCount = (withoutCodeBlocks.match(/[一-鿿぀-ヿ가-힯]/g) ?? []).length;
+  const wordCount = (withoutCodeBlocks.replace(/[一-鿿぀-ヿ가-힯]/g, ' ').match(/[A-Za-z0-9]+/g) ?? []).length;
+  const minutes = cjkCount / 400 + wordCount / 200;
+  return Math.max(1, Math.round(minutes));
 }
 
 function rehypeImageFigure() {
@@ -128,16 +191,18 @@ function rehypeImageFigure() {
 }
 
 export function getSortedPostsData(section: Section, locale: Locale = defaultLocale): PostMeta[] {
-  return slugsForSection(section)
-    .map((slug) => {
-      const { filePath, translated } = resolveFile(slug, locale);
+  return entriesForSection(section)
+    .map((entry) => {
+      const { filePath, translated } = resolveFile(entry.slug, locale);
       const fileContents = fs.readFileSync(filePath, 'utf8');
       const { data } = matter(fileContents);
       return {
-        slug,
+        slug: entry.slug,
         title: data.title as string,
         date: data.date as string,
         excerpt: data.excerpt as string | undefined,
+        category: entry.category,
+        tags: (data.tags as string[] | undefined) ?? [],
         translated,
       };
     })
@@ -169,18 +234,24 @@ export async function getPostData(
     .use(remarkGfm)
     .use(remarkMath)
     .use(remarkRehype)
+    .use(rehypeToc)
     .use(rehypeKatex)
     .use(rehypeImageFigure)
     .use(rehypeHighlight)
     .use(rehypeStringify)
     .process(content);
   const contentHtml = processedContent.toString();
+  const toc = (processedContent.data as { toc?: TocEntry[] }).toc ?? [];
 
   return {
     slug,
     title: data.title as string,
     date: data.date as string,
     excerpt: data.excerpt as string | undefined,
+    category: entry.category,
+    tags: (data.tags as string[] | undefined) ?? [],
+    readingMinutes: estimateReadingMinutes(content),
+    toc,
     translated,
     contentHtml,
   };
@@ -189,7 +260,7 @@ export async function getPostData(
 // Every canonical slug resolves for every locale (falling back to
 // defaultLocale when untranslated), so the slug set doesn't vary by locale.
 export function getAllPostSlugs(section: Section): string[] {
-  return slugsForSection(section);
+  return entriesForSection(section).map((entry) => entry.slug);
 }
 
 // Adjacent posts follow the same order as the blog index (newest first), so

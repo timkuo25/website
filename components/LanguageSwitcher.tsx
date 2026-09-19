@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter, usePathname } from "next/navigation";
-import { locales, type Locale } from "@/lib/i18n";
+import { locales, isLocale, type Locale } from "@/lib/i18n";
 
 const labels: Record<Locale, string> = {
   zh: "中文",
@@ -9,19 +9,26 @@ const labels: Record<Locale, string> = {
   ja: "日本語",
 };
 
-export default function LanguageSwitcher({
-  current,
-  base,
-}: {
-  current: Locale;
-  base: string;
-}) {
+// Only blog routes are localized (/blog/<lang>/... and /tech/blog/<lang>/...),
+// so this reads the current path itself and renders nothing elsewhere —
+// that way it can live in the shared Header instead of a blog-only layout.
+function parseBlogPath(pathname: string): { base: string; current: Locale; rest: string } | null {
+  const match = pathname.match(/^((?:\/tech)?\/blog)\/([a-z]+)((?:\/.*)?)$/);
+  if (!match) return null;
+  const [, base, lang, rest] = match;
+  if (!isLocale(lang)) return null;
+  return { base, current: lang, rest };
+}
+
+export default function LanguageSwitcher() {
   const router = useRouter();
   const pathname = usePathname();
+  const parsed = parseBlogPath(pathname);
+
+  if (!parsed) return null;
+  const { base, current, rest } = parsed;
 
   function handleChange(e: React.ChangeEvent<HTMLSelectElement>) {
-    const prefix = `${base}/${current}`;
-    const rest = pathname.startsWith(prefix) ? pathname.slice(prefix.length) : "";
     router.push(`${base}/${e.target.value}${rest}`);
   }
 

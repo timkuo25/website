@@ -3,6 +3,8 @@ title: "Approximate Membership Query：Bloom Filter 與 Quotient Filter"
 date: "2025-05-02"
 excerpt: "進化的 hash table"
 sections: ["tech"]
+category: "ds-algo"
+tags: ["Bloom Filter", "Quotient Filter", "Hash Table", "Probabilistic"]
 ---
 
 ## Bloom Filter
@@ -37,7 +39,7 @@ $$
 
 - $K$ 個 hash function 對到的值應該要平均分布，並且不同位置間沒有相關性，而且設計 $K$ 個 hash function 當 $K$ 變大時會是不容易的任務
 - 比起一般的資料結構，Bloom Filter 不需要儲存元素本身（因為他關注的是 hash 值），在儲存和查找上都有優勢（$O(K)$），且可以滿足某些保密要求
-- Bloom Filter 中已儲存的元素無法被刪除。雖然可以把 Hash 到的位置都改為 0，但會影響到其他元素，失去沒有 False Negative 這個優勢
+- Bloom Filter 中已儲存的元素無法被刪除。雖然可以把 Hash 到的位置都改為 $0$，但會影響到其他元素，失去沒有 False Negative 這個優勢
 - 誤判率會隨資料增加而上升，但對於較大的 $N$ 可以忽略不計
 
 ## Quotient Filter
@@ -49,12 +51,12 @@ Quotient Filter 的操作跟 Bloom Filter 差不多，也是插入與 query 元�
 - 前面的 bit 為 **Quotient**，用來表示元素在陣列中的位置
 - 剩下的 bit 為 **Remainder / Fingerprint**，用來存在陣列裡面
 
-如果我們需要長度為 8 的陣列，那 hash 結果的前三個 bit 會當成 Quotient，剩下的 bit 則會存在陣列裡
+如果我們需要長度為 $8$ 的陣列，那 hash 結果的前三個 bit 會當成 Quotient，剩下的 bit 則會存在陣列裡
 
 除了 Remainder，陣列裡每格還會再用三個 bit 當作 metadata，他們分別為
 
 - `is_occupied`：代表這格是某個（或某些）元素的「原本的家（**Canonical Location**）」
-- `is_continuation`：0 代表這格放的元素是某個 **Run** 的頭
+- `is_continuation`：$0$ 代表這格放的元素是某個 **Run** 的頭
 - `is_shifted`：代表這格裡的元素，已經不在它的 Canonical Location，而是被往後移位了
 
 當一個元素的位置與他的 quotient 相符，稱那個位置為 **Canonical Location**。當有一個以上的元素有相同的 Quotient 時，我們說他們屬於同一個 **Run**。第一個元素會被存在對的位置，`is_occupied`設成 $1$。後來的元素，其 remainder 會被存在下一格（即 Linear Probing），`is_continuation`跟`is_shifted`設成 $1$。

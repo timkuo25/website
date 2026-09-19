@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
-import LanguageSwitcher from "@/components/LanguageSwitcher";
-import { isLocale, locales, type Locale } from "@/lib/i18n";
+import { isLocale, locales } from "@/lib/i18n";
+import { getSortedPostsData } from "@/lib/posts";
+import CategorySidebar from "@/components/CategorySidebar";
 
 interface Props {
   children: React.ReactNode;
@@ -15,12 +16,14 @@ export default async function TechBlogLangLayout({ children, params }: Props) {
   const { lang } = await params;
   if (!isLocale(lang)) notFound();
 
+  const posts = getSortedPostsData("tech", lang);
+
   return (
-    <>
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 pt-6 flex justify-end">
-        <LanguageSwitcher current={lang as Locale} base="/tech/blog" />
-      </div>
-      {children}
-    </>
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 py-10 sm:py-16 flex flex-col sm:flex-row gap-10">
+      <aside className="sm:w-56 shrink-0">
+        <CategorySidebar posts={posts} basePath="/tech/blog" lang={lang} allArticlesLabel="All Articles" />
+      </aside>
+      <div className="flex-1 min-w-0">{children}</div>
+    </div>
   );
 }

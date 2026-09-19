@@ -1,5 +1,6 @@
 import Link from "next/link";
 import ThemeToggle from "./ThemeToggle";
+import LanguageSwitcher from "./LanguageSwitcher";
 
 interface HeaderLink {
   label: string;
@@ -34,6 +35,7 @@ export default function Header({
               {link.label}
             </Link>
           ))}
+          <LanguageSwitcher />
           <ThemeToggle />
         </div>
       </nav>

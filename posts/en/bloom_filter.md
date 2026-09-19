@@ -3,6 +3,8 @@ title: "Approximate Membership Query: Bloom Filter and Quotient Filter"
 date: "2025-05-02"
 excerpt: "An evolved hash table"
 sections: ["tech"]
+category: "ds-algo"
+tags: ["Bloom Filter", "Quotient Filter", "Hash Table", "Probabilistic"]
 ---
 
 ## Bloom Filter
@@ -37,7 +39,7 @@ $$
 
 - The values the $K$ hash functions map to should be evenly distributed, with no correlation between different positions — and designing $K$ hash functions gets harder as $K$ grows
 - Compared to a regular data structure, a Bloom Filter doesn't need to store the element itself (since it only cares about the hash value), giving it an advantage in both storage and lookup ($O(K)$), and it can also satisfy certain confidentiality requirements
-- An element already stored in a Bloom Filter can't be deleted. You could reset the hashed positions back to 0, but that would affect other elements and lose the guarantee of no False Negatives
+- An element already stored in a Bloom Filter can't be deleted. You could reset the hashed positions back to $0$, but that would affect other elements and lose the guarantee of no False Negatives
 - The false-positive rate rises as more data is added, but for a sufficiently large $N$ this becomes negligible
 
 ## Quotient Filter
@@ -49,12 +51,12 @@ A Quotient Filter's operations are similar to a Bloom Filter's — inserting and
 - The leading bits are the **Quotient**, used to indicate the element's position in the array
 - The remaining bits are the **Remainder / Fingerprint**, which get stored in the array
 
-If we need an array of length 8, the first three bits of the hash result become the Quotient, and the remaining bits get stored in the array.
+If we need an array of length $8$, the first three bits of the hash result become the Quotient, and the remaining bits get stored in the array.
 
 Besides the Remainder, each slot in the array also uses three bits as metadata:
 
 - `is_occupied`: indicates this slot is the "original home" (**Canonical Location**) of some element(s)
-- `is_continuation`: 0 means the element in this slot is the head of a **Run**
+- `is_continuation`: $0$ means the element in this slot is the head of a **Run**
 - `is_shifted`: indicates the element in this slot is no longer at its Canonical Location, and has been shifted further down
 
 When an element's position matches its quotient, that position is called its **Canonical Location**. When more than one element shares the same Quotient, we say they belong to the same **Run**. The first element gets stored at the correct slot, with `is_occupied` set to $1$. For later elements, their remainder gets stored in the next slot (i.e. Linear Probing), with `is_continuation` and `is_shifted` set to $1$.

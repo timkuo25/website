@@ -3,6 +3,8 @@ title: "前端測試都是怎麼做的"
 date: "2026-07-21"
 excerpt: "Test Driven Developing (is dead?)"
 sections: ["tech"]
+category: "web"
+tags: ["Testing", "Vitest", "Playwright", "CI/CD"]
 ---
 
 ## 要測什麼
@@ -19,7 +21,7 @@ sections: ["tech"]
 
 **前端測試「是」**
 
-- 維護與重構的基礎：測試的最高價值，是給予工程師大膽重構、維護程式碼的底氣，不用每天提心吊膽擔心改了這裡、那裡就崩潰
+- 維護與重構的基礎：為了讓工程師維護 code 可以輕鬆一點，不至於改一個功能整個程式都壞掉
 - 元件和函式的規格書：透過測試案例，定義一個元件或函式在各種 Input 下應該要有什麼對應的 Output 或行為
 - 邏輯與行為的防線：確保商業邏輯、狀態流轉、API 呼叫與資料處理在多次迭代中依然正確無誤
 

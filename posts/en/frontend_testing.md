@@ -3,6 +3,8 @@ title: "How Frontend Testing Is Actually Done"
 date: "2026-07-21"
 excerpt: "Test Driven Developing (is dead?)"
 sections: ["tech"]
+category: "web"
+tags: ["Testing", "Vitest", "Playwright", "CI/CD"]
 ---
 
 ## What to test

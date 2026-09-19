@@ -3,6 +3,8 @@ title: "工作紀錄 dashboard"
 date: "2026-05-19"
 excerpt: "還敢 vibe coding"
 sections: ["tech"]
+category: "web"
+tags: ["Next.js", "Prisma", "PostgreSQL", "Docker"]
 ---
 
 紀錄一下搞一個工作 dashboard 的過程

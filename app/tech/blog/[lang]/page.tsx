@@ -19,7 +19,7 @@ export default async function TechBlogIndex({ params }: Props) {
   const posts = getSortedPostsData("tech", lang);
 
   return (
-    <div className="max-w-3xl mx-auto px-4 sm:px-6 py-10 sm:py-16">
+    <div>
       <h1 className="text-2xl font-bold tracking-tight text-gray-900 mb-2 dark:text-gray-100">
         Blog
       </h1>
@@ -33,10 +33,7 @@ export default async function TechBlogIndex({ params }: Props) {
         <ul className="space-y-10">
           {posts.map((post) => (
             <li key={post.slug}>
-              <Link
-                href={`/tech/blog/${lang}/${post.slug}`}
-                className="group block"
-              >
+              <Link href={`/tech/blog/${lang}/${post.slug}`} className="group block">
                 <time className="text-xs text-gray-400 tracking-wide dark:text-gray-500">
                   {new Date(post.date).toLocaleDateString("en-US", {
                     year: "numeric",
@@ -58,6 +55,18 @@ export default async function TechBlogIndex({ params }: Props) {
                 <span className="mt-3 inline-block text-xs text-gray-400 group-hover:text-gray-700 transition-colors dark:text-gray-500 dark:group-hover:text-gray-300">
                   Read more →
                 </span>
+                {post.tags.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mt-3">
+                    {post.tags.map((tag) => (
+                      <span
+                        key={tag}
+                        className="text-xs px-2 py-1 rounded-md bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                )}
               </Link>
             </li>
           ))}
