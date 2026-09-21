@@ -22,6 +22,8 @@ Bloom Filter は、値が $0$ か $1$ の配列で表現できます。ある要
 
 Bloom Filter を実装するには、まず配列のサイズとして数値 $N$ を選び、配列を $0$ で初期化します。次に $K$ 個のハッシュ関数を選び、入力を配列の $K$ 個の位置にマッピングします。要素を保存するときは、その要素をハッシュ関数に通し、対応する $K$ 個の位置の値を $1$ にします。要素を query するときは、$K$ 個のハッシュ関数が指す位置がすべて $1$ の場合にのみ True を返し、そうでなければ False を返します。こうすることで、False Positive しか起こり得ない query を実現しています。
 
+![Bloom Filter](https://res.cloudinary.com/dazoegq66/image/upload/v1789965071/bloom_filter/bloom_filter_query_example.png)
+
 **注意点**
 
 - $N$ と $K$ は **1. 保存を見込む要素数 $n$** と **2. 許容できる誤判定率 $p$** から決めることができます
@@ -48,36 +50,31 @@ Quotient Filter は、Bloom Filter が要素を削除できないという弱点
 
 Quotient Filter の操作は Bloom Filter とだいたい同じで、要素の挿入と query です。ハッシュ関数は 1 つだけで、要素がそのハッシュ関数を通ると、結果は 2 つの部分に分かれます：
 
-- 前方のビットが **Quotient** で、要素が配列内のどの位置にあるかを表す
-- 残りのビットが **Remainder / Fingerprint** で、配列の中に保存される
+- 前方のビット（MSB）が **Quotient** で、要素が配列内のどの位置にあるかを表す
+- 残りのビット（LSB）が **Remainder（Fingerprint）** で、配列の中に保存される
 
-例えば長さ $8$ の配列が必要な場合、ハッシュ結果の先頭 3 ビットが Quotient になり、残りのビットが配列に保存されます。
+例えば長さ $8$ の配列が必要な場合、ハッシュ結果の先頭 3 ビット（$\log_2 8$）が Quotient になり、残りのビット（Remainder）が配列に保存されます。
 
 Remainder のほかに、配列の各スロットにはさらに 3 ビットのメタデータが使われます。それぞれ：
 
-- `is_occupied`：このスロットが、ある（または複数の）要素の「本来の家（**Canonical Location**）」であることを表す
+- `is_occupied`：このスロットが、ある要素の「本来の家（**Canonical Location**）」であることを表す（注意：必ずしもこのスロットに実際に入っている要素の家とは限らない）
 - `is_continuation`：$0$ の場合、このスロットの要素がある **Run** の先頭であることを表す
 - `is_shifted`：このスロットの要素が、すでに Canonical Location にはなく、後方にずらされていることを表す
 
-ある要素の位置がその quotient と一致するとき、その位置をその要素の **Canonical Location** と呼びます。複数の要素が同じ Quotient を持つとき、それらは同じ **Run** に属していると言います。最初の要素は正しい位置に保存され、`is_occupied` が $1$ に設定されます。後から来る要素は、その remainder が次のスロットに保存され（つまり Linear Probing）、`is_continuation` と `is_shifted` が $1$ に設定されます。
+![Soft collisions in quotient filter](https://res.cloudinary.com/dazoegq66/image/upload/v1789965024/bloom_filter/quotient_filter_insert_example.png)
 
-要素を挿入しようとした位置がすでに埋まっている場合、**要素は quotient の大きさに応じて後方に押し出されます**（どちらが前でどちらが後ろになるのかは特に調べていませんし、実装方法にもよるかもしれません。重要なのは、**異なる Run 同士は quotient に基づいた順序関係を保つ**ということです）。
+ある要素の位置がその quotient と一致するとき、その位置をその要素の **Canonical Location** と呼びます。複数の要素が同じ Quotient を持つとき、それらは同じ **Run** に属していると言います。
 
 例えば 3 つの要素 $A$、$B$、$C$ を順番に挿入し、それぞれの quotient が $2$、$2$、$3$ だとすると：
 
 - $A$ はスロット $2$ に挿入され、メタデータは $100$
-- $B$ はスロット $2$ がすでに埋まっているのを見て、linear probe でスロット $3$ に挿入され、メタデータは $011$。$A$ と同じ Run に属する
-- $C$ はスロット $3$ がすでに埋まっているのを見て、linear probe でスロット $4$ に挿入され、メタデータは $011$。さらにスロット $3$ の `is_occupied` が $1$ に設定されて $111$ になる。$A$、$B$ とは異なる Run に属する
+- $B$ はスロット $2$ がすでに埋まっていて、しかもメタデータが $100$ ——つまり同じ Run の先頭であることを見て、linear probe でスロット $3$ に挿入され、メタデータは $011$。$A$ と同じ Run に属する
+- $C$ はスロット $3$ がすでに埋まっていて、しかもメタデータが $011$ ——つまり**このスロットにいるのはこの Run でもなく、自分の Run の先頭でもない要素**であることを見る。そこでまずスロット $3$ の `is_occupied` を $1$ にして、**スロット $3$ を自分の Run としてマークし**、$111$ になる。その後 linear probe でスロット $4$ に挿入し、`is_shifted` を $1$ に設定、メタデータは $001$
 
 そうすると：
-- $A$ を query するとき、スロット $2$ のメタデータと remainder を見れば、そこが **Canonical Location** だとすぐに分かる
+- $A$ を query するとき、スロット $2$ のメタデータが $100$ で remainder も一致するので、そこが **Canonical Location** だとすぐに分かる
 - $B$ を query するとき、スロット $2$ の remainder が一致しないので後方を探し続け、`is_continuation` が $0$ になる前に必ず $B$ を見つけられる
-- $C$ を query するとき、まず `is_occupied` が $1$ であることが分かるが、remainder が一致せず `is_continuation` が $1$ なので、別の run に押し出された可能性があると判断し、さらに掘り下げて探す
-  - 左方向に `is_occupied` が $1$ のスロットの数を数え、`is_shifted` が $0$ になるまで数える
-  - 右方向に `is_continuation` が $0$ のスロットの数を数え、さっき数えた `is_occupied` が $1$ の数を使い切るまで数える
-  - こうすることで、$C$ の属する run の先頭がどこまで押し出されたかが分かる
-
-ルールは少し複雑ですが、**Quotient、Remainder、メタデータ**、この 3 つさえ押さえておけば、要素の削除もできる効率的な AMQ を実現できます。
+- $C$ を query するとき、まず `is_occupied` が $1$ であることが分かるが、remainder が一致せず `is_continuation` が $1$ なので、このスロットは別の Run に属するものだと判断できる。ここからはさらに別のルールを使って掘り下げて探す必要があり、少し複雑で、しかもネット上でもきちんと説明している人がいないようなので、興味があれば元の論文を参照してください。ただ、**Quotient、Remainder、メタデータ**、この 3 つさえ押さえておけば、要素の削除もできる効率的な AMQ を実現できるということだけ覚えておけば大丈夫です
 
 削除の操作もやや複雑で、要素を見つける、remainder を削除する、詰め直す、メタデータを更新する、といった手順が必要ですが、安全に削除できることは保証されています。
 
@@ -85,10 +82,10 @@ Remainder のほかに、配列の各スロットにはさらに 3 ビットの�
 
 ## まとめ
 
-データ量が非常に大きく、一次フィルタリング用のデータ構造が必要なとき、Bloom Filter は今でも第一候補です。成熟していてシンプル、実装しやすいからです。一方 Quotient Filter は linear probing を利用しており、CPU のハードウェアキャッシュに優しく、連続読み取りの速度は Bloom Filter を上回ることが多く、動的な削除が必要な場面に向いています。
+データ量が非常に大きく、一次フィルタリング用のデータ構造が必要なとき、Bloom Filter は今でも第一候補です。成熟していてシンプル、実装しやすいからです。一方 Quotient Filter は linear probing を利用しており、ハードウェアキャッシュに優しく、連続読み取りの速度は Bloom Filter を上回ることが多く、動的な削除が必要な場面に向いています。
 
 ## Reference
 
 - [Bloom Filters | Algorithms You Should Know #2 | Real-world Examples](https://www.youtube.com/watch?v=V3pzxngeLqw)
-- [(counting) quotient filter](https://systemdesign.one/quotient-filter-explained/)
+- [(counting) quotient filter](https://www.youtube.com/watch?v=t-BKYx3qfJQ)（この人の例はなかなか良いが、typo が多くて理解の妨げになる。とはいえ quotient filter の大まかな動作イメージはつかめる）
 - [Quotient Filter Explained | Probabilistic Data Structure To Check Membership](https://systemdesign.one/quotient-filter-explained/)

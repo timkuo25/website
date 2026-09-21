@@ -12,6 +12,7 @@ export default function TechLayout({
         links={[
           { label: "Resume", href: "/tech/resume" },
           { label: "Blog", href: "/tech/blog" },
+          { label: "Project", href: "/tech/project" },
         ]}
       />
       <main className="flex-1">{children}</main>

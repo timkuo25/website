@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
-import "katex/dist/katex.min.css";
 
 // Runs before hydration so the correct theme is applied on first paint.
 // Falls back to a manual localStorage choice, then to "dark by default
@@ -45,6 +44,11 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-slate-50 text-gray-900 dark:bg-gray-950 dark:text-gray-100">
+        <link
+          rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/katex@0.18.7/dist/katex.min.css"
+          precedence="default"
+        />
         <Script id="theme-init" strategy="beforeInteractive">
           {themeInitScript}
         </Script>

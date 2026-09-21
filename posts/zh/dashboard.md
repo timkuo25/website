@@ -2,8 +2,7 @@
 title: "工作紀錄 dashboard"
 date: "2026-05-19"
 excerpt: "還敢 vibe coding"
-sections: ["tech"]
-category: "web"
+sections: ["project"]
 tags: ["Next.js", "Prisma", "PostgreSQL", "Docker"]
 ---
 

@@ -22,6 +22,8 @@ This trait makes it well suited to scenarios that need a "first-pass filter":
 
 To implement a Bloom Filter, you need to pick a number $N$ as the size of the array, and initialize the array to $0$. Then pick $K$ hash functions, which map the input to $K$ positions in the array. When storing an element, run it through the hash functions and set the values at those $K$ positions in the array to $1$. When querying an element, only return True if all $K$ positions the hash functions map to are $1$, otherwise return False — this is how it achieves a query that can only ever be a False Positive.
 
+![Bloom Filter](https://res.cloudinary.com/dazoegq66/image/upload/v1789965071/bloom_filter/bloom_filter_query_example.png)
+
 **Notes**
 
 - $N$ and $K$ can be decided by **1. the expected number of elements to store $n$** and **2. an acceptable false-positive rate $p$**
@@ -48,36 +50,31 @@ A Quotient Filter addresses the Bloom Filter's weakness of not being able to del
 
 A Quotient Filter's operations are similar to a Bloom Filter's — inserting and querying elements. There's only a single hash function, and once an element goes through it, the result gets split into two parts:
 
-- The leading bits are the **Quotient**, used to indicate the element's position in the array
-- The remaining bits are the **Remainder / Fingerprint**, which get stored in the array
+- The leading bits (MSB) are the **Quotient**, used to indicate the element's position in the array
+- The remaining bits (LSB) are the **Remainder (Fingerprint)**, which get stored in the array
 
-If we need an array of length $8$, the first three bits of the hash result become the Quotient, and the remaining bits get stored in the array.
+If we need an array of length $8$, the first three bits of the hash result ($\log_2 8$) become the Quotient, and the remaining bits (the Remainder) get stored in the array.
 
 Besides the Remainder, each slot in the array also uses three bits as metadata:
 
-- `is_occupied`: indicates this slot is the "original home" (**Canonical Location**) of some element(s)
+- `is_occupied`: indicates this slot is some element's "original home" (**Canonical Location**) — note this isn't necessarily the home of the element actually stored here
 - `is_continuation`: $0$ means the element in this slot is the head of a **Run**
 - `is_shifted`: indicates the element in this slot is no longer at its Canonical Location, and has been shifted further down
 
-When an element's position matches its quotient, that position is called its **Canonical Location**. When more than one element shares the same Quotient, we say they belong to the same **Run**. The first element gets stored at the correct slot, with `is_occupied` set to $1$. For later elements, their remainder gets stored in the next slot (i.e. Linear Probing), with `is_continuation` and `is_shifted` set to $1$.
+![Soft collisions in quotient filter](https://res.cloudinary.com/dazoegq66/image/upload/v1789965024/bloom_filter/quotient_filter_insert_example.png)
 
-When inserting an element and that position is already occupied, **the element gets pushed further down according to its quotient's size** (I didn't dig into exactly which order — that probably depends on the implementation too — the important part is that **different Runs maintain an ordering relationship based on quotient**).
+When an element's position matches its quotient, that position is called its **Canonical Location**. When more than one element shares the same Quotient, we say they belong to the same **Run**.
 
 Say we insert three elements $A$, $B$, $C$ in order, with quotients $2$, $2$, $3$ respectively. Then:
 
 - $A$ gets inserted at slot $2$, with metadata $100$
-- $B$ sees that slot $2$ is occupied, so it linear-probes into slot $3$, with metadata $011$, belonging to the same Run as $A$
-- $C$ sees that slot $3$ is occupied, so it linear-probes into slot $4$, with metadata $011$, and slot $3$'s `is_occupied` gets set to $1$, becoming $111$ — belonging to a different Run than $A$ and $B$
+- $B$ sees that slot $2$ is occupied, and its metadata is $100$, meaning it's the head of that Run. So it linear-probes into slot $3$, with metadata $011$, belonging to the same Run as $A$
+- $C$ sees that slot $3$ is occupied, and its metadata is $011$, meaning **there's an element in this slot that belongs to neither this Run nor is the head of its own Run**. So it first sets slot $3$'s `is_occupied` to $1$, **marking slot $3$ as belonging to its own Run**, making it $111$, then linear-probes into slot $4$, setting `is_shifted` to $1$, with metadata $001$
 
 So:
-- When querying $A$, looking at slot $2$'s metadata and remainder makes it easy to tell that's its **Canonical Location**
-- When querying $B$, since slot $2$'s remainder doesn't match, you keep searching forward, and you're guaranteed to find $B$ before hitting an `is_continuation` of $0$
-- When querying $C$, you'll first see `is_occupied` is $1$, but the remainder doesn't match and `is_continuation` is $1$ — you can tell it's probably been pushed out by another run, so you search further
-  - Count leftward the number of slots where `is_occupied` is $1$, until you hit one where `is_shifted` is $0$
-  - Count rightward the number of slots where `is_continuation` is $0$, until that count matches the `is_occupied` count from before
-  - That way you can find where the start of $C$'s run has been pushed to
-
-The rules are a bit complex, but as long as you remember that **Quotient, Remainder, and metadata** — these three things — let you implement an efficient AMQ that also supports deleting elements.
+- When querying $A$, slot $2$'s metadata is $100$ and the remainder matches, so it's easy to tell that's its **Canonical Location**
+- When querying $B$, slot $2$'s remainder doesn't match, so you keep searching forward, and you're guaranteed to find $B$ before hitting an `is_continuation` of $0$
+- When querying $C$, you'll first see `is_occupied` is $1$, but the remainder doesn't match and `is_continuation` is $1$, so you can tell this slot belongs to a different Run. At this point you need another, more involved set of rules to dig further — it's a bit complicated, and nobody online seems to explain it clearly either, so check the original paper if you're curious. Still, as long as you remember that **Quotient, Remainder, and metadata** — these three things — let you implement an efficient AMQ that also supports deleting elements
 
 Deleting is also fairly complex — it involves finding the element, removing the remainder, shifting things to fill the gap, and updating metadata — but it's guaranteed to be safe to delete.
 
@@ -85,10 +82,10 @@ Finally, imagine an element $Z$ that was never inserted, but whose remainder hap
 
 ## Summary
 
-When the data volume is huge and you need a first-pass-filter data structure, a Bloom Filter is still the go-to choice, because it's mature, simple, and easy to implement. A Quotient Filter, on the other hand, uses linear probing, which is friendly to CPU hardware caches — its sequential-read speed often beats a Bloom Filter's — and it's well suited to scenarios that need dynamic deletion.
+When the data volume is huge and you need a first-pass-filter data structure, a Bloom Filter is still the go-to choice, because it's mature, simple, and easy to implement. A Quotient Filter, on the other hand, uses linear probing, which is friendly to hardware caches — its sequential-read speed often beats a Bloom Filter's — and it's well suited to scenarios that need dynamic deletion.
 
 ## Reference
 
 - [Bloom Filters | Algorithms You Should Know #2 | Real-world Examples](https://www.youtube.com/watch?v=V3pzxngeLqw)
-- [(counting) quotient filter](https://systemdesign.one/quotient-filter-explained/)
+- [(counting) quotient filter](https://www.youtube.com/watch?v=t-BKYx3qfJQ) (this one's examples are decent, but there are enough typos that it gets distracting — still, it gives a rough feel for how a quotient filter works)
 - [Quotient Filter Explained | Probabilistic Data Structure To Check Membership](https://systemdesign.one/quotient-filter-explained/)

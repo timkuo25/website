@@ -6,7 +6,7 @@ import type { Category } from './categories';
 
 export { categories, categoryLabels, isCategory, type Category } from './categories';
 
-export const sections = ['general', 'tech'] as const;
+export const sections = ['general', 'tech', 'project'] as const;
 export type Section = (typeof sections)[number];
 
 const postsDirectory = path.join(process.cwd(), 'posts');

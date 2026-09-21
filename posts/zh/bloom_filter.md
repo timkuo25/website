@@ -22,6 +22,8 @@ Bloom Filter 可以用一個值為 $0$ 或 $1$ 的陣列表示。query 有沒有
 
 實作 Bloom Filter 時需要挑一個數字 $N$ 當作陣列的大小，將陣列初始化為 $0$。再挑 $K$ 個 hash function，將輸入映射到陣列的 $K$ 個位置。儲存元素時將元素過 hash function，將陣列中 $K$ 個位置的值設為 $1$。Query 元素時，只有當 $K$ 個 hash function 對應到的位置都是 $1$ 時才回傳 True，否則回傳 False，以此來實現只可能是 False Positive 的查詢
 
+![Bloom Filter](https://res.cloudinary.com/dazoegq66/image/upload/v1789965071/bloom_filter/bloom_filter_query_example.png)
+
 **注意事項**
 
 - $N$ 與 $K$ 可以由**1. 預期儲存的元素數量 $n$** 及 **2. 可接受的誤判率 $p$** 決定
@@ -48,46 +50,41 @@ Quotient Filter 彌補了 Bloom Filter 不能刪除元素的弱點，並且多�
 
 Quotient Filter 的操作跟 Bloom Filter 差不多，也是插入與 query 元素。Hash function 只會有一個，當元素經過 hash function，結果會分成兩部分
 
-- 前面的 bit 為 **Quotient**，用來表示元素在陣列中的位置
-- 剩下的 bit 為 **Remainder / Fingerprint**，用來存在陣列裡面
+- 前面的 bit（msb） 為 **Quotient**，用來表示元素在陣列中的位置
+- 剩下的 bit（lsb） 為 **Remainder(Fingerprint)**，用來存在陣列裡面
 
-如果我們需要長度為 $8$ 的陣列，那 hash 結果的前三個 bit 會當成 Quotient，剩下的 bit 則會存在陣列裡
+如果我們需要長度為 $8$ 的陣列，那 hash 結果的前三個（$\log_2 8$） bit 會當成 Quotient，剩下的 bit（Remainder）則會存在陣列裡
 
 除了 Remainder，陣列裡每格還會再用三個 bit 當作 metadata，他們分別為
 
-- `is_occupied`：代表這格是某個（或某些）元素的「原本的家（**Canonical Location**）」
+- `is_occupied`：代表這格某個元素的「原本的家（**Canonical Location**）」（注意不一定是存在這格的元素的家）
 - `is_continuation`：$0$ 代表這格放的元素是某個 **Run** 的頭
 - `is_shifted`：代表這格裡的元素，已經不在它的 Canonical Location，而是被往後移位了
 
-當一個元素的位置與他的 quotient 相符，稱那個位置為 **Canonical Location**。當有一個以上的元素有相同的 Quotient 時，我們說他們屬於同一個 **Run**。第一個元素會被存在對的位置，`is_occupied`設成 $1$。後來的元素，其 remainder 會被存在下一格（即 Linear Probing），`is_continuation`跟`is_shifted`設成 $1$。
+![Soft collisions in quotient filter](https://res.cloudinary.com/dazoegq66/image/upload/v1789965024/bloom_filter/quotient_filter_insert_example.png)
 
-當要插入一個元素，那個位置已經被占據了，那麼 **元素會依照 quotient 大小被往後推**（我沒特別研究誰前誰後，可能跟實作的方式也會有關，重點是**不同 Run 之間會根據 quotient** 維持一個順序關係）
+當一個元素的位置與他的 quotient 相符，稱那個位置為 **Canonical Location**。當有一個以上的元素有相同的 Quotient 時，稱他們屬於同一個 **Run**。
 
 假設依序插入三個元素 $A$、$B$、$C$，他們的 quotient 分別為 $2$、$2$、$3$，那麼
 
 - $A$ 會被插在第 $2$ 格，metadata 為 $100$
-- $B$ 由於看到第 $2$ 格被占了，linear probe 插在第 $3$ 格，metadata 為 $011$，與 $A$ 屬於同個 Run
-- $C$ 由於看到第 $3$ 格被占了，linear probe 插在第 $4$ 格，metadata 為 $011$，且第 $3$ 格的`is_occupied`設成 $1$，變成 $111$，與 $A$、$B$ 屬於不同 Run
+- $B$ 由於看到第 $2$ 格被占了，且 metadata 是個 $100$，代表他是同一個 Run 的頭。於是 linear probe 插在第 $3$ 格，metadata 為 $011$，與 $A$ 屬於同個 Run
+- $C$ 由於看到第 $3$ 格被占了，且 metadata 是個 $011$，代表 **有一個不是這個 Run，也不是他自己 Run 的頭的元素在這格**。於是先將第 $3$ 格的`is_occupied`設成 $1$，**把第 $3$ 格標成自己的 Run**，變成 $111$，再 linear probe 插在第 $4$ 格，把 `is_shifted` 設為 $1$，metadata 為 $001$
 
 那麼
-- Query $A$ 時看第 $2$ 格的 metadata 與 remainder 很容易得知那就是他的 **Canonical Location**
+- Query $A$ 時看第 $2$ 格的 metadata 是 $100$，且 remainder 也對的上，很容易得知那就是他的 **Canonical Location**
 - Query $B$ 時由於第 $2$ 格的 remainder 對不上所以往後找，一定能在 `is_continuation` 為 $0$ 前找到 $B$
-- Query $C$ 時首先會看到 `is_occupied` 為 $1$，但 remainder 不對且 `is_continuation` 為 $1$，可以判斷可能是被別的 run 擠走了，此時會再深入搜尋
-  - 往左數 `is_occupied` 為 $1$ 的數量，直到 `is_shifted` 為 $0$
-  - 往右數 `is_continuation` 為 $0$ 的數量，直到把剛剛數的 `is_occupied` 為 $1$ 的數量扣完
-  - 這樣就能找到屬於 $C$ 的 run 的開頭被擠到哪裡
-
-規則有點複雜，但只要記住透過 **Quotient、Remainder、metadata** 這三個東西，就能實現一個有效率且能刪除元素的 AMQ。
+- Query $C$ 時首先會看到 `is_occupied` 為 $1$，但 remainder 不對且 `is_continuation` 為 $1$，可以判斷這格是別的 Run 的元素，此時會再用另一套規則深入搜尋，有點複雜，而且網路上好像也沒人能講清楚，有興趣的請參考原論文。但只要記住透過 **Quotient、Remainder、metadata** 這三個東西，就能實現一個有效率且能刪除元素的 AMQ
 
 刪除的動作也較為複雜，包含找到元素、刪掉 remainder、補位、修改 metadata，但可以保證是能安全刪除的
 
 最後，想像一個沒有被加入的元素 $Z$，他的 remainder 在一個剛剛好的地方被找到了，這就是 Quotient Filter 的 false positive，來自 remainder 的 collision
 
 ## 總結
-當資料量極大，需要一個初步過濾的資料結構時，Bloom Filter 仍然是首選，因為它成熟且簡單、易於實作。Quotient Filter 則是運用了 linear probing，對 CPU 的硬體快取友好，連續讀取的速度往往優於 Bloom Filter，且適用於須動態刪除的場景
+當資料量極大，需要一個初步過濾的資料結構時，Bloom Filter 仍然是首選，因為它成熟且簡單、易於實作。Quotient Filter 則是運用了 linear probing，對硬體 cache 友好，連續讀取的速度往往優於 Bloom Filter，且適用於須動態刪除的場景
 
 ## Reference
 
 - [Bloom Filters | Algorithms You Should Know #2 | Real-world Examples](https://www.youtube.com/watch?v=V3pzxngeLqw)
-- [(counting) quotient filter](https://systemdesign.one/quotient-filter-explained/)
+- [(counting) quotient filter](https://www.youtube.com/watch?v=t-BKYx3qfJQ)（這人的例子不錯但 typo 不少很干擾理解，但能提供一個 quotient filter 大概運作的感覺）
 - [Quotient Filter Explained | Probabilistic Data Structure To Check Membership](https://systemdesign.one/quotient-filter-explained/)
