@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import matter from 'gray-matter';
 import { defaultLocale, type Locale } from './i18n';
-import type { Category } from './categories';
+import { isCategory, type Category } from './categories';
 
 export { categories, categoryLabels, isCategory, type Category } from './categories';
 
@@ -28,12 +28,19 @@ function slugFilePath(slug: string, locale: Locale): string {
 interface CanonicalEntry {
   slug: string;
   sections: Section[];
-  category?: Category;
+  categories: Category[];
+}
+
+function parseCategories(value: unknown): Category[] {
+  const raw = Array.isArray(value) ? value : value ? [value] : [];
+  return raw.filter((v): v is Category => typeof v === 'string' && isCategory(v));
 }
 
 // Reading every post's frontmatter is cheap, but there's no reason to redo it
 // on every call within the same process — the canonical index is computed
-// once and reused.
+// once and reused. Only in production, though: in dev the cache would outlive
+// edits to post frontmatter (a content change, not a module Next's file
+// watcher would invalidate), silently showing stale data until restart.
 let canonicalIndexCache: CanonicalEntry[] | null = null;
 
 function canonicalIndex(): CanonicalEntry[] {
@@ -41,11 +48,10 @@ function canonicalIndex(): CanonicalEntry[] {
 
   const dir = localeDir(defaultLocale);
   if (!fs.existsSync(dir)) {
-    canonicalIndexCache = [];
-    return canonicalIndexCache;
+    return process.env.NODE_ENV === 'production' ? (canonicalIndexCache = []) : [];
   }
 
-  canonicalIndexCache = fs
+  const index = fs
     .readdirSync(dir)
     .filter((f) => f.endsWith('.md'))
     .map((f) => {
@@ -54,11 +60,12 @@ function canonicalIndex(): CanonicalEntry[] {
       return {
         slug,
         sections: (data.sections as Section[] | undefined) ?? [],
-        category: data.category as Category | undefined,
+        categories: parseCategories(data.categories),
       };
     });
 
-  return canonicalIndexCache;
+  if (process.env.NODE_ENV === 'production') canonicalIndexCache = index;
+  return index;
 }
 
 function entriesForSection(section: Section): CanonicalEntry[] {
@@ -80,7 +87,7 @@ export interface PostMeta {
   title: string;
   date: string;
   excerpt?: string;
-  category?: Category;
+  categories: Category[];
   tags: string[];
   translated: boolean;
 }
@@ -152,6 +159,25 @@ function estimateReadingMinutes(markdown: string): number {
   return Math.max(1, Math.round(minutes));
 }
 
+function rehypeNewTabLinks() {
+  return (tree: HastNode) => {
+    const walk = (node: HastNode) => {
+      if (!node.children) return;
+      for (const child of node.children) {
+        if (child.type === 'element' && child.tagName === 'a') {
+          child.properties = {
+            ...(child.properties ?? {}),
+            target: '_blank',
+            rel: 'noopener noreferrer',
+          };
+        }
+        walk(child);
+      }
+    };
+    walk(tree);
+  };
+}
+
 function rehypeImageFigure() {
   return (tree: HastNode) => {
     const walk = (node: HastNode) => {
@@ -201,7 +227,7 @@ export function getSortedPostsData(section: Section, locale: Locale = defaultLoc
         title: data.title as string,
         date: data.date as string,
         excerpt: data.excerpt as string | undefined,
-        category: entry.category,
+        categories: entry.categories,
         tags: (data.tags as string[] | undefined) ?? [],
         translated,
       };
@@ -236,6 +262,7 @@ export async function getPostData(
     .use(remarkRehype)
     .use(rehypeToc)
     .use(rehypeKatex)
+    .use(rehypeNewTabLinks)
     .use(rehypeImageFigure)
     .use(rehypeHighlight)
     .use(rehypeStringify)
@@ -248,7 +275,7 @@ export async function getPostData(
     title: data.title as string,
     date: data.date as string,
     excerpt: data.excerpt as string | undefined,
-    category: entry.category,
+    categories: entry.categories,
     tags: (data.tags as string[] | undefined) ?? [],
     readingMinutes: estimateReadingMinutes(content),
     toc,

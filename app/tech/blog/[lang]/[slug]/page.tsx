@@ -44,12 +44,6 @@ export default async function TechBlogPost({ params }: Props) {
           <Link href={`/tech/blog/${lang}`} className="hover:text-gray-700 dark:hover:text-gray-300">
             Blog
           </Link>
-          {post.category && (
-            <>
-              <span className="mx-2" aria-hidden="true">/</span>
-              <span>{categoryLabels[post.category]}</span>
-            </>
-          )}
           <span className="mx-2" aria-hidden="true">/</span>
           <span className="text-gray-600 dark:text-gray-300">{post.title}</span>
         </nav>
@@ -59,6 +53,12 @@ export default async function TechBlogPost({ params }: Props) {
             <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-gray-900 dark:text-gray-100">
               {post.title}
             </h1>
+
+            {post.categories.length > 0 && (
+              <p className="mt-3 text-sm text-gray-500 dark:text-gray-400">
+                Category: {post.categories.map((category) => categoryLabels[category]).join(", ")}
+              </p>
+            )}
 
             {post.tags.length > 0 && (
               <div className="flex flex-wrap gap-2 mt-4">
@@ -74,14 +74,6 @@ export default async function TechBlogPost({ params }: Props) {
             )}
 
             <div className="flex items-center gap-2 mt-4 text-xs text-gray-400 tracking-wide dark:text-gray-500">
-              <time>
-                {new Date(post.date).toLocaleDateString("en-US", {
-                  year: "numeric",
-                  month: "long",
-                  day: "numeric",
-                })}
-              </time>
-              <span aria-hidden="true">·</span>
               <span>{post.readingMinutes} min read</span>
             </div>
           </header>

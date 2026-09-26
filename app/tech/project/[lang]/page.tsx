@@ -34,14 +34,7 @@ export default async function TechProjectIndex({ params }: Props) {
           {posts.map((post) => (
             <li key={post.slug}>
               <Link href={`/tech/project/${lang}/${post.slug}`} className="group block">
-                <time className="text-xs text-gray-400 tracking-wide dark:text-gray-500">
-                  {new Date(post.date).toLocaleDateString("en-US", {
-                    year: "numeric",
-                    month: "long",
-                    day: "numeric",
-                  })}
-                </time>
-                <h2 className="mt-1.5 text-lg font-semibold text-gray-900 group-hover:text-gray-600 transition-colors dark:text-gray-100 dark:group-hover:text-gray-400">
+                <h2 className="text-lg font-semibold text-gray-900 group-hover:text-gray-600 transition-colors dark:text-gray-100 dark:group-hover:text-gray-400">
                   {post.title}
                 </h2>
                 {!post.translated && (

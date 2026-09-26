@@ -3,7 +3,7 @@ title: "Approximate Membership Query: Bloom Filter and Quotient Filter"
 date: "2025-05-02"
 excerpt: "An evolved hash table"
 sections: ["tech"]
-category: "ds-algo"
+categories: ["ds-algo"]
 tags: ["Bloom Filter", "Quotient Filter", "Hash Table", "Probabilistic"]
 ---
 

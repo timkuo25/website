@@ -1,5 +1,5 @@
 ---
-title: "如何學日文 —— 10 個 level"
+title: "學日文的 10 個 level"
 date: "2026-04-08"
 excerpt: "今何時ですか"
 sections: ["general"]

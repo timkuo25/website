@@ -24,7 +24,7 @@ export default async function TechBlogIndex({ params }: Props) {
         Blog
       </h1>
       <p className="text-gray-500 mb-12 dark:text-gray-400">
-        Notes on code, tools, and things I&apos;m building.
+        Think out of the box.
       </p>
 
       {posts.length === 0 ? (
@@ -34,14 +34,7 @@ export default async function TechBlogIndex({ params }: Props) {
           {posts.map((post) => (
             <li key={post.slug}>
               <Link href={`/tech/blog/${lang}/${post.slug}`} className="group block">
-                <time className="text-xs text-gray-400 tracking-wide dark:text-gray-500">
-                  {new Date(post.date).toLocaleDateString("en-US", {
-                    year: "numeric",
-                    month: "long",
-                    day: "numeric",
-                  })}
-                </time>
-                <h2 className="mt-1.5 text-lg font-semibold text-gray-900 group-hover:text-gray-600 transition-colors dark:text-gray-100 dark:group-hover:text-gray-400">
+                <h2 className="text-lg font-semibold text-gray-900 group-hover:text-gray-600 transition-colors dark:text-gray-100 dark:group-hover:text-gray-400">
                   {post.title}
                 </h2>
                 {!post.translated && (

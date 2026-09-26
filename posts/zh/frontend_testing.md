@@ -3,7 +3,7 @@ title: "前端測試都是怎麼做的"
 date: "2026-07-21"
 excerpt: "Test Driven Developing (is dead?)"
 sections: ["tech"]
-category: "web"
+categories: ["web"]
 tags: ["Testing", "Vitest", "Playwright", "CI/CD"]
 ---
 

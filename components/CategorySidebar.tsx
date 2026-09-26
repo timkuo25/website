@@ -20,12 +20,16 @@ export default function CategorySidebar({
   const pathname = usePathname();
   const prefix = `${basePath}/${lang}/`;
   const currentSlug = pathname.startsWith(prefix) ? pathname.slice(prefix.length) : null;
-  const currentCategory = currentSlug
-    ? posts.find((post) => post.slug === currentSlug)?.category
-    : undefined;
+  const currentCategories = currentSlug
+    ? posts.find((post) => post.slug === currentSlug)?.categories ?? []
+    : [];
 
   const [openCategories, setOpenCategories] = useState<Set<Category>>(
-    () => new Set(currentCategory ? [currentCategory] : [])
+    () => new Set(currentCategories)
+  );
+
+  const activeCategories = categories.filter((category) =>
+    posts.some((post) => post.categories.includes(category))
   );
 
   function toggle(category: Category) {
@@ -51,8 +55,8 @@ export default function CategorySidebar({
       </Link>
 
       <ul className="space-y-1">
-        {categories.map((category) => {
-          const categoryPosts = posts.filter((post) => post.category === category);
+        {activeCategories.map((category) => {
+          const categoryPosts = posts.filter((post) => post.categories.includes(category));
           const isOpen = openCategories.has(category);
 
           return (
@@ -61,7 +65,7 @@ export default function CategorySidebar({
                 type="button"
                 onClick={() => toggle(category)}
                 aria-expanded={isOpen}
-                className="w-full flex items-center justify-between gap-2 py-1.5 text-left font-medium text-gray-700 hover:text-gray-900 transition-colors dark:text-gray-300 dark:hover:text-gray-100"
+                className="w-full flex items-center justify-between gap-2 py-1.5 text-left font-medium text-gray-700 hover:text-gray-900 transition-colors cursor-pointer dark:text-gray-300 dark:hover:text-gray-100"
               >
                 <span>{categoryLabels[category]}</span>
                 <span
@@ -74,24 +78,20 @@ export default function CategorySidebar({
 
               {isOpen && (
                 <ul className="mt-1 mb-2 ml-3 space-y-1 border-l border-gray-100 pl-3 dark:border-gray-800">
-                  {categoryPosts.length === 0 ? (
-                    <li className="py-1 text-xs text-gray-400 dark:text-gray-600">—</li>
-                  ) : (
-                    categoryPosts.map((post) => (
-                      <li key={post.slug}>
-                        <Link
-                          href={`${basePath}/${lang}/${post.slug}`}
-                          className={
-                            post.slug === currentSlug
-                              ? "block py-1 font-medium text-gray-900 dark:text-gray-100"
-                              : "block py-1 text-gray-500 hover:text-gray-900 transition-colors dark:text-gray-400 dark:hover:text-gray-100"
-                          }
-                        >
-                          {post.title}
-                        </Link>
-                      </li>
-                    ))
-                  )}
+                  {categoryPosts.map((post) => (
+                    <li key={post.slug}>
+                      <Link
+                        href={`${basePath}/${lang}/${post.slug}`}
+                        className={
+                          post.slug === currentSlug
+                            ? "block py-1 font-medium text-gray-900 dark:text-gray-100"
+                            : "block py-1 text-gray-500 hover:text-gray-900 transition-colors dark:text-gray-400 dark:hover:text-gray-100"
+                        }
+                      >
+                        {post.title}
+                      </Link>
+                    </li>
+                  ))}
                 </ul>
               )}
             </li>

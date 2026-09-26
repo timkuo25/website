@@ -46,14 +46,7 @@ export default async function TechProjectPost({ params }: Props) {
 
       <article>
         <header className="mb-10">
-          <time className="text-xs text-gray-400 tracking-wide dark:text-gray-500">
-            {new Date(post.date).toLocaleDateString("en-US", {
-              year: "numeric",
-              month: "long",
-              day: "numeric",
-            })}
-          </time>
-          <h1 className="mt-2 text-2xl sm:text-3xl font-bold tracking-tight text-gray-900 dark:text-gray-100">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-gray-900 dark:text-gray-100">
             {post.title}
           </h1>
 

@@ -3,7 +3,7 @@ title: "Approximate Membership Query：Bloom Filter 與 Quotient Filter"
 date: "2025-05-02"
 excerpt: "進化的 hash table"
 sections: ["tech"]
-category: "ds-algo"
+categories: ["ds-algo"]
 tags: ["Bloom Filter", "Quotient Filter", "Hash Table", "Probabilistic"]
 ---
 
@@ -81,6 +81,7 @@ Quotient Filter 的操作跟 Bloom Filter 差不多，也是插入與 query 元�
 最後，想像一個沒有被加入的元素 $Z$，他的 remainder 在一個剛剛好的地方被找到了，這就是 Quotient Filter 的 false positive，來自 remainder 的 collision
 
 ## 總結
+
 當資料量極大，需要一個初步過濾的資料結構時，Bloom Filter 仍然是首選，因為它成熟且簡單、易於實作。Quotient Filter 則是運用了 linear probing，對硬體 cache 友好，連續讀取的速度往往優於 Bloom Filter，且適用於須動態刪除的場景
 
 ## Reference

@@ -3,7 +3,7 @@ title: "フロントエンドのテストって実際どうやるの"
 date: "2026-07-21"
 excerpt: "Test Driven Developing (is dead?)"
 sections: ["tech"]
-category: "web"
+categories: ["web"]
 tags: ["Testing", "Vitest", "Playwright", "CI/CD"]
 ---
 
