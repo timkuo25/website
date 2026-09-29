@@ -10,6 +10,7 @@ export default function Home() {
         <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-black dark:text-white">
           哈囉 慢慢看
         </h1>
+        <p className="mt-3 text-gray-500 dark:text-gray-400">我忘記了所有悲劇，看到的都是奇蹟</p>
         <p className="mt-2 text-sm text-gray-400 dark:text-gray-500">📍 Taipei, Taiwan</p>
         <div className="mt-6 flex items-center gap-4">
           <a

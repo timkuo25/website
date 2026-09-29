@@ -31,7 +31,7 @@ There are also two things to watch out for when using it:
 
 ## Perfect Secrecy
 
-What makes One-Time Pad special is that it's one of the few encryption schemes that achieves **Perfect Secrecy**. Perfect Secrecy was introduced by Claude Shannon (yes, the Information Theory guy), and it's the strongest security definition in cryptography.
+What makes One-Time Pad special is that it's one of the few encryption schemes that achieves **Perfect Secrecy**. Perfect Secrecy was introduced by Claude Shannon (the Information Theory guy), and it's the strongest security definition in cryptography.
 
 An encryption scheme has perfect secrecy if an attacker who sees the ciphertext $c$ gains absolutely no information about the plaintext $m$. Your probability estimate of what the plaintext is stays exactly the same before and after seeing the ciphertext:
 

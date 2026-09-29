@@ -20,12 +20,6 @@ export default async function BlogIndex({ params }: Props) {
 
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 py-10 sm:py-16">
-      <h1 className="text-2xl font-bold tracking-tight text-gray-900 mb-2 dark:text-gray-100">
-        Blog
-      </h1>
-      <p className="text-gray-500 mb-12 dark:text-gray-400">
-        Thoughts on life, language, and everything in between.
-      </p>
 
       {posts.length === 0 ? (
         <p className="text-gray-400 dark:text-gray-500">No posts yet. Check back soon.</p>
