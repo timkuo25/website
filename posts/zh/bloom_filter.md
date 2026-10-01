@@ -57,7 +57,7 @@ Quotient Filter 的操作跟 Bloom Filter 差不多，也是插入與 query 元�
 
 除了 Remainder，陣列裡每格還會再用三個 bit 當作 metadata，他們分別為
 
-- `is_occupied`：代表這格某個元素的「原本的家（**Canonical Location**）」（注意不一定是存在這格的元素的家）
+- `is_occupied`：代表這格是某個元素的「原本的家（**Canonical Location**）」（注意不一定是存在這格的元素的家）
 - `is_continuation`：$0$ 代表這格放的元素是某個 **Run** 的頭
 - `is_shifted`：代表這格裡的元素，已經不在它的 Canonical Location，而是被往後移位了
 

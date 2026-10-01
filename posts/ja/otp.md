@@ -3,7 +3,7 @@ title: "One-Time Pad と Many-Time Pad"
 date: "2025-05-08"
 excerpt: "しー、これは私たちの秘密"
 sections: ["tech"]
-categories: ["ds-algo", "security"]
+categories: ["security"]
 tags: ["one-time pad", "many-time pad", "symmetric-key algorithm", "stream cipher", "cryptography"]
 ---
 
